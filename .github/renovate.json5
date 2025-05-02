@@ -1,0 +1,63 @@
+{
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "branchPrefix": "update-renovate/",
+    "gitAuthor": "Renovate Bot <bot@renovateapp.com>",
+    "forkProcessing": "disabled",
+    "extends": [
+        "config:recommended",
+        ":rebaseStalePrs",
+        "docker:enableMajor",
+    ],
+    "enabledManagers": [
+        "docker-compose",
+        "github-actions",
+        "nix",
+    ],
+    // Enable lock file management for flake.lock
+    "lockFileMaintenance": {
+        "enabled": true,
+        "schedule": ["at any time"],
+    },
+    // Enable nix management
+    "nix": {
+        "enabled": true,
+    },
+    "packageRules": [
+        {
+            "matchDatasources": [
+                "docker",
+            ],
+            "versioning": "semver-coerced",
+        },
+        // Update immich together as these likely need manually pinning
+        {
+            "matchDatasources": [
+                "docker"
+            ],
+            "matchFileNames": ["docker-compose.yml"],
+            "groupName": "docker-immich",
+        },
+        // Immich also have raw version number tags which confuse renovate
+        // eg we want v1.108.0 not 1372
+        {
+            "matchDatasources": [
+                "docker"
+            ],
+            "matchFileNames": ["docker-compose.yml"],
+            "matchPackageNames": ["ghcr.io/immich-app/**"],
+            "versioning": "regex:^v(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)$",
+        },
+        // Disable major updates of redis as immich needs 6.x
+        {
+            "matchDatasources": [
+                "docker"
+            ],
+            "matchFileNames": ["docker-compose.yml"],
+            "matchPackageNames": ["docker.io/redis"],
+            "matchUpdateTypes": ["major"],
+            "enabled": false,
+            "groupName": "docker-immich-major",
+        },
+    ],
+}
+
